@@ -1,31 +1,36 @@
 <template>
-  <div class="flex justify-center items-center min-h-screen bg-gray-100">
-    <div class="bg-white p-6 rounded shadow w-80">
-      <h1 class="text-xl font-bold mb-4 text-center">Login</h1>
-      
+  <div class="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-900 to-black">
+    <div class="bg-gray-800 p-8 rounded-xl shadow-xl w-full max-w-sm">
+      <h1 class="text-2xl font-bold text-white text-center mb-6">Login</h1>
+
       <input
         v-model="username"
         placeholder="Username"
-        class="mb-3 p-2 border w-full rounded"
+        class="mb-3 p-3 w-full rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
       />
 
       <input
         v-model="password"
         type="password"
         placeholder="Password"
-        class="mb-4 p-2 border w-full rounded"
+        class="mb-4 p-3 w-full rounded-lg bg-gray-700 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
       />
 
       <button
         @click="handleLogin"
-        class="bg-blue-500 text-white p-2 w-full rounded hover:bg-blue-600"
+        class="bg-black hover:bg-gray-700 text-white font-semibold py-2 w-full rounded-lg transition duration-200 border border-white/10 focus:outline-none focus:ring-2 focus:ring-white focus:border-white"
       >
         Login
       </button>
 
-      <p v-if="errorMsg" class="text-red-500 text-sm mt-3 text-center">
+      <p v-if="errorMsg" class="text-red-400 text-sm mt-4 text-center">
         {{ errorMsg }}
       </p>
+
+      <div class="text-center text-sm text-gray-400 mt-4">
+        Don’t have an account?
+        <router-link to="/register" class="underline hover:text-white">Register</router-link>
+      </div>
     </div>
   </div>
 </template>
