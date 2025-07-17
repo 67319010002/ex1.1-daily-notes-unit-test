@@ -55,11 +55,10 @@
     <!-- My Notes (ขวา 30%) -->
     <div class="col-span-3">
 
-      <!-- แก้ไขโปรไฟล์ส่วนเพิ่ม -->
+      <!-- แก้ไขโปรไฟล์แบบ Dropdown ตอน Hover -->
       <div
-        class="flex items-center bg-gray-700 rounded-md p-3 mb-4 max-w-full space-x-4 cursor-pointer"
-        @click="toggleEditUser = !toggleEditUser"
-        title="Click to edit profile"
+        class="relative flex items-center bg-gray-700 rounded-md p-3 mb-4 max-w-full space-x-4 cursor-pointer group"
+        title="Hover to edit profile"
       >
         <img
           :src="userAvatar"
@@ -67,38 +66,48 @@
           class="w-12 h-12 rounded-full object-cover flex-shrink-0"
         />
         <span class="text-white font-semibold text-lg truncate">{{ userName }}</span>
-        <button class="ml-auto btn-black text-sm px-3 py-1">⚙️ Edit</button>
-      </div>
 
-      <!-- ฟอร์มแก้ไขโปรไฟล์ -->
-      <div v-if="toggleEditUser" class="bg-gray-800 p-4 rounded-md mb-6 space-y-3 max-w-full">
-        <input
-          v-model="editUserName"
-          placeholder="Edit username"
-          class="w-full p-2 rounded border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring focus:ring-blue-500"
-        />
+        <!-- ไอคอนฟันเฟืองเล็ก -->
+        <div
+          class="ml-auto text-white text-lg px-2 py-1 rounded hover:bg-gray-600"
+          title="Edit Profile"
+        >
+          ⚙️
+        </div>
 
-        <!-- input type file สำหรับอัปโหลดรูปอวาตาร์ -->
-        <input
-          type="file"
-          accept="image/*"
-          @change="onAvatarFileChange"
-          class="w-full p-2 rounded border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring focus:ring-blue-500"
-        />
+        <!-- เมนูแก้ไขโปรไฟล์ แสดงตอน hover -->
+        <div
+          class="absolute right-0 top-full mt-2 bg-gray-800 p-4 rounded-md shadow-lg w-64 opacity-0 pointer-events-none group-hover:opacity-100 group-hover:pointer-events-auto transition-opacity duration-300 z-20"
+        >
+          <input
+            v-model="editUserName"
+            placeholder="Edit username"
+            class="w-full p-2 rounded border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring focus:ring-blue-500 mb-2"
+          />
 
-        <img
-          v-if="editUserAvatar && !userAvatarError"
-          :src="editUserAvatar"
-          alt="Avatar preview"
-          class="w-20 h-20 object-cover rounded-full"
-          @error="userAvatarError = true"
-          @load="userAvatarError = false"
-        />
-        <span v-if="userAvatarError" class="text-red-500">รูปภาพไม่ถูกต้องหรือโหลดไม่สำเร็จ</span>
+          <input
+            type="file"
+            accept="image/*"
+            @change="onAvatarFileChange"
+            class="w-full p-2 rounded border border-gray-600 bg-gray-900 text-white focus:outline-none focus:ring focus:ring-blue-500 mb-2"
+          />
 
-        <div class="flex space-x-2 mt-2">
-          <button @click="saveUserProfile" class="btn-black flex-1">💾 Save</button>
-          <button @click="cancelEditUser" class="btn-black flex-1">✖️ Cancel</button>
+          <img
+            v-if="editUserAvatar && !userAvatarError"
+            :src="editUserAvatar"
+            alt="Avatar preview"
+            class="w-20 h-20 object-cover rounded-full mx-auto mb-2"
+            @error="userAvatarError = true"
+            @load="userAvatarError = false"
+          />
+          <span v-if="userAvatarError" class="text-red-500 block mb-2 text-center">
+            รูปภาพไม่ถูกต้องหรือโหลดไม่สำเร็จ
+          </span>
+
+          <div class="flex space-x-2">
+            <button @click="saveUserProfile" class="btn-black flex-1">💾 Save</button>
+            <button @click="cancelEditUser" class="btn-black flex-1">✖️ Cancel</button>
+          </div>
         </div>
       </div>
 
@@ -298,7 +307,6 @@ const userName = ref('Chanid')
 const userAvatar = ref(localStorage.getItem('userAvatar') || 'https://i.pravatar.cc/40')
 
 // ตัวแปรแก้ไขโปรไฟล์
-const toggleEditUser = ref(false)
 const editUserName = ref(userName.value)
 const editUserAvatar = ref(userAvatar.value) // จะเก็บ data URL ของไฟล์
 const userAvatarError = ref(false)
@@ -471,38 +479,20 @@ const saveUserProfile = async () => {
 
   userName.value = editUserName.value.trim()
   userAvatar.value = editUserAvatar.value
-  toggleEditUser.value = false
 
-  // บันทึกรูปโปรไฟล์ลง localStorage เพื่อให้จำได้แม้ reload
+  // บันทึกลง localStorage
   localStorage.setItem('userAvatar', editUserAvatar.value)
   localStorage.setItem('userName', userName.value)
 
-  // TODO: ถ้ามี API สำหรับอัปโหลดรูปและอัปเดตโปรไฟล์
-  // ให้ส่งรูปที่เป็น base64 หรือ FormData ไปที่ backend ที่นี่
-  // ตัวอย่าง:
-  /*
-  try {
-    const formData = new FormData()
-    formData.append('username', userName.value)
-    formData.append('avatar', fileObjectOrBase64) // ต้องแปลงเป็นไฟล์หรือ base64 ตาม API
-
-    await axios.post('http://localhost:5000/api/user/profile', formData, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'multipart/form-data',
-      },
-    })
-  } catch (error) {
-    console.error('Failed to update profile:', error)
-  }
-  */
+  // ปิดเมนูแก้ไข
+  // (ถ้าอยากให้ปิดตอน save ต้องซ่อนเมนูด้วยการจัดการ state หรือ event)
+  // ในที่นี้เพราะเมนูเป็น hover-based จะซ่อนเองเมื่อเอาเมาส์ออก
 }
 
 const cancelEditUser = () => {
   editUserName.value = userName.value
   editUserAvatar.value = userAvatar.value
   userAvatarError.value = false
-  toggleEditUser.value = false
 }
 
 onMounted(() => {
@@ -512,7 +502,7 @@ onMounted(() => {
     userName.value = storedName
     editUserName.value = storedName
   }
-  
+
   fetchMyNotes()
   fetchAllNotes()
 })
@@ -551,9 +541,14 @@ body {
   line-height: 1;
 }
 
+.note-hover-effect {
+  transition: all 0.3s ease; /* ใส่ transition ให้ smooth */
+}
+
 .note-hover-effect:hover {
-  background-color: #222 !important;
-  transition: background-color 0.3s ease;
+  border-color: #fff; /* ขอบสีขาว */
+  box-shadow: 0 6px 12px rgba(255, 255, 255, 0.7); /* แสงสีขาว */
+  transform: translateY(-6px); /* เด้งขึ้น 6px */
 }
 
 textarea {

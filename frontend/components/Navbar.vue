@@ -1,13 +1,14 @@
 <template>
-  <nav class="bg-black text-white px-6 py-4 flex items-center shadow-md">
-    <NuxtLink to="dashboard" class="font-bold text-2xl hover:text-gray-300 transition flex-shrink-0">
+  <nav class="bg-black text-white px-6 py-4 flex items-center shadow-md relative">
+    <NuxtLink to="/dashboard" class="font-bold text-2xl hover:text-gray-300 transition flex-shrink-0">
       DailyNotes
     </NuxtLink>
 
     <div class="ml-auto relative">
       <button
+        ref="btnRef"
         @click="toggleDropdown"
-        class="p-2 rounded hover:bg-gray-800 transition"
+        class="p-2 rounded hover:bg-gray-800 transition focus:outline-none focus:ring-2 focus:ring-indigo-500"
         aria-label="Settings"
       >
         ⚙️
@@ -15,6 +16,7 @@
 
       <div
         v-if="dropdownOpen"
+        ref="menuRef"
         class="absolute right-0 mt-2 w-40 bg-gray-900 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-50"
       >
         <NuxtLink
@@ -50,11 +52,13 @@
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 
-const router = useRouter()
 const dropdownOpen = ref(false)
+const btnRef = ref(null)
+const menuRef = ref(null)
+const router = useRouter()
 
 const toggleDropdown = () => {
   dropdownOpen.value = !dropdownOpen.value
@@ -66,7 +70,30 @@ const closeDropdown = () => {
 
 const handleLogout = () => {
   localStorage.removeItem('token')
-  dropdownOpen.value = false
+  closeDropdown()
   router.push('/login')
 }
+
+// ฟังก์ชันคลิกข้างนอกเพื่อปิด dropdown
+const handleClickOutside = (event) => {
+  const btn = btnRef.value
+  const menu = menuRef.value
+  if (
+    dropdownOpen.value &&
+    menu &&
+    btn &&
+    !menu.contains(event.target) &&
+    !btn.contains(event.target)
+  ) {
+    closeDropdown()
+  }
+}
+
+onMounted(() => {
+  window.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+  window.removeEventListener('click', handleClickOutside)
+})
 </script>
