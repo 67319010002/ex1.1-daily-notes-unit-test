@@ -40,3 +40,31 @@ def update_note(note_id):
 def delete_note(note_id):
     Note.objects(id=note_id).delete()
     return jsonify({"msg": "Note deleted!"})
+
+
+@notes.route('/notes/search', methods=['GET'])
+@jwt_required()
+def search_notes():
+    query = request.args.get('q', '').strip()
+    user_id = get_jwt_identity()
+    user = User.objects(id=user_id).first()
+
+    if not query:
+        return jsonify({"msg": "Please provide a search query."}), 400
+
+    found_notes = Note.objects(
+        user=user,
+        __raw__={
+            "$or": [
+                {"title": {"$regex": query, "$options": "i"}},
+                {"content": {"$regex": query, "$options": "i"}}
+            ]
+        }
+    ).order_by('-created_at')
+
+    return jsonify([{
+        "id": str(note.id),
+        "title": note.title,
+        "content": note.content,
+        "created_at": note.created_at.strftime("%Y-%m-%d %H:%M:%S")
+    } for note in found_notes])
